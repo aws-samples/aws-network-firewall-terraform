@@ -27,11 +27,14 @@ The rule-groups configured in the policy are the following:
 
 The template deploys two instances in `spoke-vpc-a` and `spoke-vpc-b` in the `protected` subnets that you can use to test east-west connectivity (and north-south).
 
+By default, the templates deploy in the `eu-west-1` AWS Region. 
+If you wish to deploy in any other AWS Region, edit the corresponding setting in the [provider.tf](provider.tf) file.
+
 ### How-to
 1. Install Terraform (0.14.6 or higher)
 2. Clone this repository
 3. Initialise Terraform `terraform init`
-4. Deploy the template with `terraform apply`
+4. Deploy the template with `terraform apply`. 
 
 ## Security
 
