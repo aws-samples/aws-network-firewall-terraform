@@ -112,10 +112,6 @@ resource "aws_cloudwatch_log_group" "anfw_alert_log_group" {
   name = "/aws/network-firewall/alert"
 }
 
-resource "aws_cloudwatch_log_group" "anfw_flow_log_group" {
-  name = "/aws/network-firewall/flow"
-}
-
 resource "random_string" "bucket_random_id" {
   length  = 5
   special = false
@@ -150,9 +146,9 @@ resource "aws_networkfirewall_logging_configuration" "anfw_alert_logging_configu
     }
     log_destination_config {
       log_destination = {
-        logGroup = aws_cloudwatch_log_group.anfw_flow_log_group.name
+        bucketName = aws_s3_bucket.anfw_flow_bucket.bucket
       }
-      log_destination_type = "CloudWatchLogs"
+      log_destination_type = "S3"
       log_type             = "FLOW"
     }
   }
