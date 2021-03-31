@@ -121,6 +121,7 @@ resource "random_string" "bucket_random_id" {
 resource "aws_s3_bucket" "anfw_flow_bucket" {
   bucket = "network-firewall-flow-bucket-${random_string.bucket_random_id.id}"
   acl    = "private"
+  force_destroy = true
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {

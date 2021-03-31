@@ -38,6 +38,20 @@ If you wish to deploy in any other AWS Region, edit the corresponding setting in
 3. Initialise Terraform `terraform init`
 4. Deploy the template with `terraform apply`. 
 
+### Tests
+- try a ping between instances in `spoke-vpc-a` and `spoke-vpc-b`: this shouldn't work
+- try to SSH to the EC2 Instance in `spoke-vpc-b` from the EC2 Instance in `spoke-vpc-a` (or vice-versa): this shouldn't work
+- try to curl the private IP of the EC2 Instance in `spoke-vpc-b` from the EC2 Instance in `spoke-vpc-a` (or vice-versa): this should work
+- try a ping to a public IP address: this shouldn't work
+- try to `dig` using a public DNS resolver: this shouldn't work
+- try to curl https://facebook.com or https://twitter.com: this shouldn't work
+- try to curl any other public URL: this should work
+
+### Cleanup
+Remember to clean up after your work is complete. You can do that by doing `terraform destroy`.
+
+Note that this command will delete all the resources previously created by Terraform.
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
