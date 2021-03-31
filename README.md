@@ -18,7 +18,9 @@ The [firewall.tf](firewall.tf) template file contains the definitions of the FW 
 
 The [default action](https://docs.aws.amazon.com/network-firewall/latest/developerguide/stateless-default-actions.html) taken by the stateless engine is `Forward to stateful rule groups`.
 
-[Flow and log alerts](https://docs.aws.amazon.com/network-firewall/latest/developerguide/logging-cw-logs.html) are stored in separate Cloudwatch Log Groups 
+[Alert logs](https://docs.aws.amazon.com/network-firewall/latest/developerguide/logging-cw-logs.html) are persisted in a dedicated Cloudwatch Log Group (`/aws/network-firewall/alert`).
+
+[Flow logs](https://docs.aws.amazon.com/network-firewall/latest/developerguide/logging-cw-logs.html) are persisted in a dedicated S3 Bucket (`network-firewall-flow-bucket-*`).
 
 The rule-groups configured in the policy are the following:
 - `drop-icmp`: this is a stateless rule group that drops all ICMP traffic
