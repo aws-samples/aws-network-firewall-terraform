@@ -14,6 +14,9 @@ resource "aws_networkfirewall_firewall_policy" "anfw_policy" {
       resource_arn = aws_networkfirewall_rule_group.block_domains.arn
     }
     stateful_rule_group_reference {
+      resource_arn = aws_networkfirewall_rule_group.block_public_dns_resolvers.arn
+    }
+    stateful_rule_group_reference {
       resource_arn = aws_networkfirewall_rule_group.drop_non_http_between_vpcs.arn
     }
   }
@@ -64,6 +67,30 @@ resource "aws_networkfirewall_rule_group" "drop_non_http_between_vpcs" {
       drop tcp $SPOKE_VPCS any <> $SPOKE_VPCS any (msg:"Blocked TCP that is not HTTP"; flow:established; app-layer-protocol:!http; sid:100; rev:1;)
       drop ip $SPOKE_VPCS any <> $SPOKE_VPCS any (msg: "Block non-TCP traffic."; ip_proto:!TCP;sid:200; rev:1;)
       EOF
+    }
+  }
+}
+
+resource "aws_networkfirewall_rule_group" "block_public_dns_resolvers" {
+  capacity = 1
+  name     = "block-public-dns"
+  type     = "STATEFUL"
+  rule_group {
+    rules_source {
+      stateful_rule {
+        action = "DROP"
+        header {
+          destination      = "ANY"
+          destination_port = "ANY"
+          direction        = "ANY"
+          protocol         = "DNS"
+          source           = "ANY"
+          source_port      = "ANY"
+        }
+        rule_option {
+          keyword = "sid:50"
+        }
+      }
     }
   }
 }
@@ -119,8 +146,8 @@ resource "random_string" "bucket_random_id" {
 }
 
 resource "aws_s3_bucket" "anfw_flow_bucket" {
-  bucket = "network-firewall-flow-bucket-${random_string.bucket_random_id.id}"
-  acl    = "private"
+  bucket        = "network-firewall-flow-bucket-${random_string.bucket_random_id.id}"
+  acl           = "private"
   force_destroy = true
   server_side_encryption_configuration {
     rule {
