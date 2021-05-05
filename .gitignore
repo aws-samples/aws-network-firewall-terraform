@@ -1,5 +1,7 @@
 git-ignored/
 .terraform
 *.tfstate
+*.tfplan
 *.backup
 *.hcl
+backend.tf
