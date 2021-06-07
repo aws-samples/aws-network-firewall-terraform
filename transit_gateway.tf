@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 resource "aws_ec2_transit_gateway" "tgw" {
+  default_route_table_association = "disable"
+  default_route_table_propagation = "disable"
   tags = {
     Name = "transit-gateway"
   }
@@ -29,6 +31,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "spoke_vpc_a_tgw_attachment" {
   transit_gateway_id                              = aws_ec2_transit_gateway.tgw.id
   vpc_id                                          = aws_vpc.spoke_vpc_a.id
   transit_gateway_default_route_table_association = false
+  transit_gateway_default_route_table_propagation = false
   tags = {
     Name = "spoke-vpc-a-attachment"
   }
@@ -44,6 +47,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "spoke_vpc_b_tgw_attachment" {
   transit_gateway_id                              = aws_ec2_transit_gateway.tgw.id
   vpc_id                                          = aws_vpc.spoke_vpc_b.id
   transit_gateway_default_route_table_association = false
+  transit_gateway_default_route_table_propagation = false
   tags = {
     Name = "spoke-vpc-b-attachment"
   }
@@ -59,6 +63,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "inspection_vpc_tgw_attachment
   transit_gateway_id                              = aws_ec2_transit_gateway.tgw.id
   vpc_id                                          = aws_vpc.inspection_vpc.id
   transit_gateway_default_route_table_association = false
+  transit_gateway_default_route_table_propagation = false
   appliance_mode_support                          = "enable"
   tags = {
     Name = "inspection-vpc-attachment"
