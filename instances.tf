@@ -181,6 +181,11 @@ resource "aws_instance" "spoke_vpc_a_host" {
     Name = "spoke-vpc-a/host"
   }
   user_data = file("install-nginx.sh")
+  depends_on = [
+    aws_networkfirewall_firewall.inspection_vpc_anfw,
+    aws_nat_gateway.inspection_vpc_nat_gw,
+    aws_ec2_transit_gateway.tgw
+  ]
 }
 
 resource "aws_instance" "spoke_vpc_b_host" {
@@ -193,6 +198,11 @@ resource "aws_instance" "spoke_vpc_b_host" {
     Name = "spoke-vpc-b/host"
   }
   user_data = file("install-nginx.sh")
+  depends_on = [
+    aws_networkfirewall_firewall.inspection_vpc_anfw,
+    aws_nat_gateway.inspection_vpc_nat_gw,
+    aws_ec2_transit_gateway.tgw
+  ]
 }
 
 output "spoke_vpc_a_host_ip" {
