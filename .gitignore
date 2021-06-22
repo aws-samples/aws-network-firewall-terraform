@@ -5,3 +5,4 @@ git-ignored/
 *.backup
 *.hcl
 backend.tf
+.checkov.yml

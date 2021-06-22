@@ -176,6 +176,9 @@ resource "aws_instance" "spoke_vpc_a_host" {
   subnet_id              = aws_subnet.spoke_vpc_a_protected_subnet[0].id
   iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
   instance_type          = "t3.micro"
+  root_block_device {
+    volume_type            = "gp3"
+  }
   vpc_security_group_ids = [aws_security_group.spoke_vpc_a_host_sg.id]
   tags = {
     Name = "spoke-vpc-a/host"
@@ -193,6 +196,10 @@ resource "aws_instance" "spoke_vpc_b_host" {
   subnet_id              = aws_subnet.spoke_vpc_b_protected_subnet[0].id
   iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
   instance_type          = "t3.micro"
+  root_block_device {
+    volume_type            = "gp3"
+  }
+  
   vpc_security_group_ids = [aws_security_group.spoke_vpc_b_host_sg.id]
   tags = {
     Name = "spoke-vpc-b/host"

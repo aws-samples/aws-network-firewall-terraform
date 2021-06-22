@@ -11,7 +11,7 @@ resource "aws_vpc" "inspection_vpc" {
 
 resource "aws_subnet" "inspection_vpc_public_subnet" {
   count                   = length(data.aws_availability_zones.available.names)
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
   vpc_id                  = aws_vpc.inspection_vpc.id
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   cidr_block              = cidrsubnet(local.inspection_vpc_cidr, 8, 10 + count.index)

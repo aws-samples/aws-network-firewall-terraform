@@ -65,7 +65,7 @@ resource "aws_networkfirewall_rule_group" "drop_non_http_between_vpcs" {
     rules_source {
       rules_string = <<EOF
       drop tcp $SPOKE_VPCS any <> $SPOKE_VPCS any (msg:"Blocked TCP that is not HTTP"; flow:established; app-layer-protocol:!http; sid:100; rev:1;)
-      drop ip $SPOKE_VPCS any <> $SPOKE_VPCS any (msg: "Block non-TCP traffic."; ip_proto:!TCP;sid:200; rev:1;)
+      drop ip $SPOKE_VPCS any <> $SPOKE_VPCS any (msg: "Block non-TCP traffic."; ip_proto:!TCP; sid:200; rev:1;)
       EOF
     }
   }
@@ -136,7 +136,8 @@ resource "aws_networkfirewall_firewall" "inspection_vpc_anfw" {
 }
 
 resource "aws_cloudwatch_log_group" "anfw_alert_log_group" {
-  name = "/aws/network-firewall/alert"
+  name              = "/aws/network-firewall/alert"
+  retention_in_days = 14
 }
 
 resource "random_string" "bucket_random_id" {
