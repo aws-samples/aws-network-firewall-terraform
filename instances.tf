@@ -82,7 +82,7 @@ resource "aws_security_group" "spoke_vpc_b_endpoint_sg" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_a_ssm_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_a.id
-  service_name      = "com.amazonaws.eu-west-1.ssm"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssm"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_a_endpoint_subnet[*].id
   security_group_ids = [
@@ -93,7 +93,7 @@ resource "aws_vpc_endpoint" "spoke_vpc_a_ssm_endpoint" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_a_ssm_messages_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_a.id
-  service_name      = "com.amazonaws.eu-west-1.ssmmessages"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_a_endpoint_subnet[*].id
   security_group_ids = [
@@ -104,7 +104,7 @@ resource "aws_vpc_endpoint" "spoke_vpc_a_ssm_messages_endpoint" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_a_ec2_messages_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_a.id
-  service_name      = "com.amazonaws.eu-west-1.ec2messages"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ec2messages"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_a_endpoint_subnet[*].id
   security_group_ids = [
@@ -115,7 +115,7 @@ resource "aws_vpc_endpoint" "spoke_vpc_a_ec2_messages_endpoint" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_b_ssm_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_b.id
-  service_name      = "com.amazonaws.eu-west-1.ssm"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssm"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_b_endpoint_subnet[*].id
   security_group_ids = [
@@ -126,7 +126,7 @@ resource "aws_vpc_endpoint" "spoke_vpc_b_ssm_endpoint" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_b_ssm_messages_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_b.id
-  service_name      = "com.amazonaws.eu-west-1.ssmmessages"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_b_endpoint_subnet[*].id
   security_group_ids = [
@@ -137,7 +137,7 @@ resource "aws_vpc_endpoint" "spoke_vpc_b_ssm_messages_endpoint" {
 
 resource "aws_vpc_endpoint" "spoke_vpc_b_ec2_messages_endpoint" {
   vpc_id            = aws_vpc.spoke_vpc_b.id
-  service_name      = "com.amazonaws.eu-west-1.ec2messages"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ec2messages"
   vpc_endpoint_type = "Interface"
   subnet_ids        = aws_subnet.spoke_vpc_b_endpoint_subnet[*].id
   security_group_ids = [
