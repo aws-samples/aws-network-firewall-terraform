@@ -49,6 +49,7 @@ If you wish to deploy in any other AWS Region, edit the corresponding setting in
 - try to `dig` using a public DNS resolver: this shouldn't work
 - try to curl https://facebook.com or https://twitter.com: this shouldn't work
 - try to curl any other public URL: this should work
+- from any browser naviate to http://<public_alb_dns_name> where <public_alb_dns_name> is the DNS name of the ALB created by your Terraform code in the Inspection VPC.
 
 ### Cleanup
 Remember to clean up after your work is complete. You can do that by doing `terraform destroy`.
