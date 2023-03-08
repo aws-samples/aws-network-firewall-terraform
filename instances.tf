@@ -46,7 +46,6 @@ resource "aws_security_group" "spoke_vpc_b_host_sg" {
   }
 }
 
-
 resource "aws_instance" "spoke_vpc_a_host" {
   ami                         = data.aws_ami.amazon-linux-2.id
   subnet_id                   = aws_subnet.spoke_vpc_a_protected_subnet[0].id

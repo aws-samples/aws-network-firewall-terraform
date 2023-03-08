@@ -7,3 +7,5 @@ data "aws_ami" "amazon-linux-2" {
   owners      = ["amazon"]
   name_regex  = "amzn2-ami-hvm*"
 }
+
+data "aws_region" "current" {}
