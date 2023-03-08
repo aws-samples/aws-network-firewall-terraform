@@ -10,18 +10,77 @@ runcmd:
   - [yum, install, nginx, --assumeyes]
   - [systemctl, daemon-reload]
   - [systemctl, enable, nginx]
-  - [rm, -rf, /usr/share/nginx/html/index.html]
-  - [
-      curl,
-      "https://raw.githubusercontent.com/Einsteinish/docker-nginx-hello-world/master/index.html",
-      -o,
-      /usr/share/nginx/html/index.html,
-    ]
-  - [
-      curl,
-      "https://raw.githubusercontent.com/Einsteinish/docker-nginx-hello-world/master/helloworld.conf",
-      -o,
-      /etc/nginx/conf.d/helloworld.conf,
-    ]
+  - [mv, /tmp/index.html, /usr/share/nginx/html/index.html]
+  - [mv, /tmp/helloworld.conf, /etc/nginx/conf.d/helloworld.conf]
   - [chmod, 755, /usr/share/nginx/html/index.html]
   - [systemctl, start, nginx]
+
+write_files:
+  - path: /tmp/index.html
+    owner: root:root
+    permissions: 0o600
+    content: |
+      <!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>AWS Network Firewall - Terraform sample landing page</title>
+          <link rel="canonical" href="https://getbootstrap.com/docs/5.2/examples/starter-template/">
+           <!-- Bootstrap CSS -->
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        </head>
+        <body>
+          
+          <div class="col-lg-8 mx-auto p-4 py-md-5">
+
+            <main>
+              <h1>AWS Network Firewall Centralised Ingress - Landing Page</h1>
+              <p class="fs-5 col-md-8">This page is served by a fleet of EC2 instances deployed in the Protected Subnets of Spoke VPC A. The public ALB uses the Private IPs of an NLB located in the same subnets as IP targets for its attached Target Group.</p>
+
+              <hr class="col-3 col-md-2 mb-5">
+
+              <div class="row g-5">
+                <div class="col-md-6">
+                  <h2>Server name</h2>
+                  <p>server_hostnames</p>
+                  
+                </div>
+
+                <div class="col-md-6">
+                  <h2>Server IP</h2>
+                  <p>server_address</p>
+                </div>
+              </div>
+
+
+            </main>
+            <footer class="pt-5 my-5 text-muted border-top">
+              // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+              // SPDX-License-Identifier: MIT-0
+            </footer>
+          </div>
+
+            
+        </body>
+      </html>
+
+  - path: /tmp/helloworld.conf
+    owner: root:root
+    permissions: 0o600
+    content: |
+      server {
+          listen 80;
+
+          root /usr/share/nginx/html;
+          try_files /index.html =404;
+
+          expires -1;
+
+          sub_filter_once off;
+          sub_filter 'server_hostname' '$hostname';
+          sub_filter 'server_address' '$server_addr:$server_port';
+          sub_filter 'server_url' '$request_uri';
+          sub_filter 'server_date' '$time_local';
+          sub_filter 'request_id' '$request_id';
+      }

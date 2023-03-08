@@ -12,6 +12,9 @@ Internet egress is also configured in the inspection VPC, by deploying NAT Gatew
 The template deploys two EC2 instances in `spoke-vpc-a` and `spoke-vpc-b` for testing purposes. 
 It also deploys resources so that connecting to these instances is enabled via [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html).
 
+The templates also deploy a webservice implemented by three EC2 instances `web-host[1-3]` in the `spoke-a` VPC, fronted by a private NLB. 
+Ingress is centralised in the inspection VPC by the use of a public ALB with an associated Target Group with the private IPs of the private NLB as targets.
+
 ### AWS Network Firewall Configuration
 
 The [firewall.tf](firewall.tf) template file contains the definitions of the FW rule-groups that these templates come with by default. 
