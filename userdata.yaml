@@ -1,0 +1,27 @@
+#cloud-config
+repo_update: true
+repo_upgrade: all
+
+runcmd:
+  - [amazon-linux-extras, enable, epel]
+  - [yum, clean, metadata]
+  - [yum, install, curl, --assumeyes]
+  - [yum, install, epel-release, --assumeyes]
+  - [yum, install, nginx, --assumeyes]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, nginx]
+  - [rm, -rf, /usr/share/nginx/html/index.html]
+  - [
+      curl,
+      "https://raw.githubusercontent.com/Einsteinish/docker-nginx-hello-world/master/index.html",
+      -o,
+      /usr/share/nginx/html/index.html,
+    ]
+  - [
+      curl,
+      "https://raw.githubusercontent.com/Einsteinish/docker-nginx-hello-world/master/helloworld.conf",
+      -o,
+      /etc/nginx/conf.d/helloworld.conf,
+    ]
+  - [chmod, 755, /usr/share/nginx/html/index.html]
+  - [systemctl, start, nginx]
