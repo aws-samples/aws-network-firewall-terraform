@@ -88,7 +88,8 @@ resource "aws_networkfirewall_rule_group" "block_public_dns_resolvers" {
           source_port      = "ANY"
         }
         rule_option {
-          keyword = "sid:50"
+          keyword  = "sid"
+          settings = ["50"]
         }
       }
     }
@@ -149,15 +150,14 @@ resource "aws_s3_bucket" "anfw_flow_bucket" {
   bucket        = "network-firewall-flow-bucket-${random_string.bucket_random_id.id}"
   acl           = "private"
   force_destroy = true
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm     = "AES256"
-      }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
+  bucket = aws_s3_bucket.anfw_flow_bucket.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
     }
-  }
-  versioning {
-    enabled = true
   }
 }
 
