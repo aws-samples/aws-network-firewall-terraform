@@ -148,7 +148,6 @@ resource "random_string" "bucket_random_id" {
 
 resource "aws_s3_bucket" "anfw_flow_bucket" {
   bucket        = "network-firewall-flow-bucket-${random_string.bucket_random_id.id}"
-  acl           = "private"
   force_destroy = true
 }
 
@@ -159,6 +158,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
       sse_algorithm = "aws:kms"
     }
   }
+}
+
+resource "aws_s3_bucket_acl" "example_bucket_acl" {
+  bucket = aws_s3_bucket.anfw_flow_bucket.id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "anfw_flow_bucket_public_access_block" {
