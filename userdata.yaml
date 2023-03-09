@@ -28,9 +28,16 @@ write_files:
           <link rel="canonical" href="https://getbootstrap.com/docs/5.2/examples/starter-template/">
            <!-- Bootstrap CSS -->
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
+          <script type="text/javascript">
+            function calcConnectionTime() {
+              // Measuring DNS lookup time
+              const [pageNav] = performance.getEntriesByType('navigation');
+              const connectionTime = pageNav.responseEnd - pageNav.connectStart;
+              document.getElementById('conntime').innerHTML = connectionTime.toFixed(2);
+            }
+          </script>
         </head>
-        <body>
+        <body onload="calcConnectionTime()">
           
           <div class="col-lg-8 mx-auto p-4 py-md-5">
 
@@ -42,14 +49,16 @@ write_files:
 
               <div class="row g-5">
                 <div class="col-md-6">
-                  <h2>Server name</h2>
-                  <p>server_hostnames</p>
-                  
+                  <h2>Server and connection data</h2>
+                  <p><b>hostname:</b> server_hostnames</p>
+                  <p><b>ip address/port:</b> server_address</p>
+                  <p><b>connection time:</b> <var id='conntime'></var> msec</p>
                 </div>
 
                 <div class="col-md-6">
-                  <h2>Server IP</h2>
-                  <p>server_address</p>
+                  <h2>Headers</h2>
+                  <p><b>host:</b> host_header</p>
+                  <p><b>user-agent:</b> user_agent</p>
                 </div>
               </div>
 
@@ -83,4 +92,6 @@ write_files:
           sub_filter 'server_url' '$request_uri';
           sub_filter 'server_date' '$time_local';
           sub_filter 'request_id' '$request_id';
-      }
+          sub_filter 'host_header' '$host';
+          sub_filter 'user_agent' '$http_user_agent';
+        }
