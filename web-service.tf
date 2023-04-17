@@ -1,7 +1,3 @@
-data "template_file" "user_data" {
-  template = file("userdata.yaml")
-}
-
 resource "aws_instance" "vpc_a_web_hosts" {
   count                       = 3
   ami                         = data.aws_ami.amazon-linux-2.id
@@ -13,7 +9,7 @@ resource "aws_instance" "vpc_a_web_hosts" {
   tags = {
     Name = "spoke-vpc-a/web-host-${count.index}"
   }
-  user_data = data.template_file.user_data.rendered
+  user_data = base64encode(templatefile("userdata.yaml", {}))
 }
 
 resource "aws_security_group" "spoke_vpc_a_web_service_sg" {
