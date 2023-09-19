@@ -160,9 +160,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
   }
 }
 
-resource "aws_s3_bucket_acl" "example_bucket_acl" {
+resource "aws_s3_bucket_ownership_controls" "anfw_flow_bucket_ownership_control" {
   bucket = aws_s3_bucket.anfw_flow_bucket.id
-  acl    = "private"
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "anfw_flow_bucket_public_access_block" {
