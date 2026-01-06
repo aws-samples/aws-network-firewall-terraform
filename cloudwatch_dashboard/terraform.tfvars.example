@@ -1,0 +1,46 @@
+# AWS Network Firewall CloudWatch Dashboard Configuration
+# Copy this file to terraform.tfvars and update with your specific values
+
+# Required Variables
+firewall_name                   = "my-network-firewall"
+firewall_subnet_list           = ["subnet-12345678", "subnet-87654321"]
+firewall_flow_log_group_name   = "/aws/networkfirewall/flowlogs"
+firewall_alert_log_group_name  = "/aws/networkfirewall/alertlogs"
+
+# Optional Variables
+contributor_insights_rule_state = "ENABLED"  # Options: ENABLED, DISABLED
+
+# Tags (optional)
+tags = {
+  Environment = "production"
+  Project     = "network-security"
+  Owner       = "security-team"
+  CostCenter  = "12345"
+}
+
+# Example configurations for different environments:
+
+# Development Environment
+# firewall_name                   = "dev-network-firewall"
+# firewall_subnet_list           = ["subnet-dev123", "subnet-dev456"]
+# firewall_flow_log_group_name   = "/aws/networkfirewall/dev/flowlogs"
+# firewall_alert_log_group_name  = "/aws/networkfirewall/dev/alertlogs"
+# contributor_insights_rule_state = "DISABLED"
+# tags = {
+#   Terraform   = "true"
+#   Environment = "development"
+#   Project     = "network-security"
+# }
+
+# Production Environment
+# firewall_name                   = "prod-network-firewall"
+# firewall_subnet_list           = ["subnet-prod123", "subnet-prod456", "subnet-prod789"]
+# firewall_flow_log_group_name   = "/aws/networkfirewall/prod/flowlogs"
+# firewall_alert_log_group_name  = "/aws/networkfirewall/prod/alertlogs"
+# contributor_insights_rule_state = "ENABLED"
+# tags = {
+#   Terraform   = "true"
+#   Environment = "production"
+#   Project     = "network-security"
+#   Compliance  = "required"
+# }
