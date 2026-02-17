@@ -1,0 +1,220 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+# ---------- Prod VPC 1 ----------
+resource "aws_vpc" "prod_vpc1" {
+  cidr_block = var.prod_vpc1_cidr
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1"
+  }
+}
+
+# ---------- Prod VPC 1 Subnets ----------
+# Cloud WAN Subnets
+resource "aws_subnet" "prod_vpc1_cwan" {
+  count             = 2
+  vpc_id            = aws_vpc.prod_vpc1.id
+  cidr_block        = var.prod_vpc1_cwan_subnets[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-cwan-subnet${count.index + 1}"
+  }
+}
+
+# Endpoint Subnets
+resource "aws_subnet" "prod_vpc1_endpoint" {
+  count             = 2
+  vpc_id            = aws_vpc.prod_vpc1.id
+  cidr_block        = var.prod_vpc1_endpoint_subnets[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-endpoint-subnet${count.index + 1}"
+  }
+}
+
+# Workload Subnets
+resource "aws_subnet" "prod_vpc1_workload" {
+  count             = 2
+  vpc_id            = aws_vpc.prod_vpc1.id
+  cidr_block        = var.prod_vpc1_workload_subnets[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-workload-subnet${count.index + 1}"
+  }
+}
+
+# ---------- Prod VPC 1 Route Tables ----------
+# Cloud WAN Route Tables
+resource "aws_route_table" "prod_vpc1_cwan" {
+  count  = 2
+  vpc_id = aws_vpc.prod_vpc1.id
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-cwan-rtb${count.index + 1}"
+  }
+}
+
+resource "aws_route_table_association" "prod_vpc1_cwan" {
+  count          = 2
+  subnet_id      = aws_subnet.prod_vpc1_cwan[count.index].id
+  route_table_id = aws_route_table.prod_vpc1_cwan[count.index].id
+}
+
+# Endpoint Route Tables
+resource "aws_route_table" "prod_vpc1_endpoint" {
+  count  = 2
+  vpc_id = aws_vpc.prod_vpc1.id
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-endpoint-rtb${count.index + 1}"
+  }
+}
+
+resource "aws_route_table_association" "prod_vpc1_endpoint" {
+  count          = 2
+  subnet_id      = aws_subnet.prod_vpc1_endpoint[count.index].id
+  route_table_id = aws_route_table.prod_vpc1_endpoint[count.index].id
+}
+
+# Workload Route Tables
+resource "aws_route_table" "prod_vpc1_workload" {
+  count  = 2
+  vpc_id = aws_vpc.prod_vpc1.id
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-workload-rtb${count.index + 1}"
+  }
+}
+
+resource "aws_route_table_association" "prod_vpc1_workload" {
+  count          = 2
+  subnet_id      = aws_subnet.prod_vpc1_workload[count.index].id
+  route_table_id = aws_route_table.prod_vpc1_workload[count.index].id
+}
+
+# ---------- Cloud WAN Attachment ----------
+resource "aws_networkmanager_vpc_attachment" "prod_vpc1" {
+  core_network_id = var.core_network_id
+  vpc_arn         = aws_vpc.prod_vpc1.arn
+  subnet_arns     = aws_subnet.prod_vpc1_cwan[*].arn
+
+  tags = {
+    Name   = "${var.project_name}-${local.region}-prod-vpc1-attachment"
+    domain = "Production"
+  }
+}
+
+# Default route to Core Network
+resource "aws_route" "prod_vpc1_workload_default" {
+  count                  = 2
+  route_table_id         = aws_route_table.prod_vpc1_workload[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  core_network_arn       = var.core_network_arn
+
+  depends_on = [aws_networkmanager_vpc_attachment.prod_vpc1]
+}
+
+# ---------- Security Groups ----------
+resource "aws_security_group" "prod_vpc1_workload" {
+  name        = "${var.project_name}-${local.region}-prod-vpc1-workload-sg"
+  description = "Prod VPC 1 Workload EC2 Instance Security Group"
+  vpc_id      = aws_vpc.prod_vpc1.id
+
+  ingress {
+    description = "Allow inbound from 10.0.0.0/8"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-workload-sg"
+  }
+}
+
+resource "aws_security_group" "prod_vpc1_endpoint" {
+  name        = "${var.project_name}-${local.region}-prod-vpc1-endpoint-sg"
+  description = "Prod VPC 1 Endpoint Security Group"
+  vpc_id      = aws_vpc.prod_vpc1.id
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-endpoint-sg"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "prod_vpc1_workload_eic" {
+  security_group_id            = aws_security_group.prod_vpc1_workload.id
+  description                  = "Allow SSH from EC2 Instance Connect"
+  from_port                    = 22
+  to_port                      = 22
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.prod_vpc1_endpoint.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "prod_vpc1_endpoint_eic" {
+  security_group_id            = aws_security_group.prod_vpc1_endpoint.id
+  description                  = "Allow SSH to workload instances"
+  from_port                    = 22
+  to_port                      = 22
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.prod_vpc1_workload.id
+}
+
+# ---------- EC2 Instance Connect Endpoint ----------
+resource "aws_ec2_instance_connect_endpoint" "prod_vpc1" {
+  subnet_id          = aws_subnet.prod_vpc1_endpoint[0].id
+  security_group_ids = [aws_security_group.prod_vpc1_endpoint.id]
+  preserve_client_ip = false
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-eic"
+  }
+}
+
+# ---------- Workload EC2 Instances ----------
+resource "aws_instance" "prod_vpc1_workload" {
+  count                  = 2
+  ami                    = data.aws_ssm_parameter.amazon_linux_ami.value
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.prod_vpc1_workload[count.index].id
+  vpc_security_group_ids = [aws_security_group.prod_vpc1_workload.id]
+
+  user_data = <<-EOF
+    #!/bin/bash -ex
+    yum update -y
+    yum install -y jq httpd htop
+    systemctl enable httpd
+    systemctl start httpd
+    hostnamectl set-hostname prod-vpc1-workload-${count.index + 1}
+    echo 'ClientAliveInterval 60' | tee --append /etc/ssh/sshd_config
+    systemctl restart sshd
+    INSTANCE_AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    INSTANCE_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+    cat <<EOT > /var/www/html/index.html
+    <html>
+      <head><title>Prod VPC 1 Workload Instance ${count.index + 1}</title></head>
+      <body>
+        <h1>Welcome to AWS Cloud WAN Egress Inspection Architecture POC:</h1>
+        <h2>This is a simple web server running in $INSTANCE_AZ in $INSTANCE_REGION. Happy Testing!</h2>
+      </body>
+    </html>
+    EOT
+  EOF
+
+  tags = {
+    Name = "${var.project_name}-${local.region}-prod-vpc1-workload-instance${count.index + 1}"
+  }
+}
