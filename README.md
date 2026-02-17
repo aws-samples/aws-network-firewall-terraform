@@ -1,66 +1,78 @@
-# AWS Network Firewall - Terraform Sample
+# AWS Network Firewall Terraform Templates
 
-This repository contains terraform code to deploy a sample architecture to try AWS Network Firewall. The resources deployed and the architectural pattern they follow is purely for demonstration/testing purposes. If you are looking for a set of approved architectures, read this [blog post](https://aws.amazon.com/blogs/networking-and-content-delivery/deployment-models-for-aws-network-firewall/).
+Sample Terraform templates demonstrating [AWS Network Firewall](https://aws.amazon.com/network-firewall/) routing architectures and deployment models.
 
-The image below is a graphical representation of what resources are defined in the Terraform code in this repository: 
-![Architectural Diagram with Two Spoke VPCs, Transit Gateway and Inspection VPC](images/anfw-terraform-sample.jpg "Architectural Diagram")
+> **Looking for CloudFormation?** These same architectures are available as CloudFormation templates: [aws-networkfirewall-cfn-templates](https://github.com/aws-samples/aws-networkfirewall-cfn-templates)
 
-The templates deploy three VPCs (`spoke-a`, `spoke-b`, and `inspection`).
-AWS Network Firewall endpoints are deployed in the Inspection VPC. 
-Internet egress is also configured in the inspection VPC, by deploying NAT Gateways in Public Subnets.
+## Available Architectures
 
-The template deploys two EC2 instances in `spoke-vpc-a` and `spoke-vpc-b` for testing purposes. 
-It also deploys resources so that connecting to these instances is enabled via [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html).
+### Centralized Architecture
 
-The templates also deploy a webservice implemented by three EC2 instances `web-host[1-3]` in the `spoke-a` VPC, fronted by a private NLB. 
-Ingress is centralised in the inspection VPC by the use of a public ALB with an associated Target Group with the private IPs of the private NLB as targets.
+Uses AWS Transit Gateway for centralized inspection of East-West (VPC-to-VPC) and egress (internet-bound) traffic.
 
-### AWS Network Firewall Configuration
+#### [Transit Gateway-Attached Firewall](transit_gateway_attached_firewall/)
 
-The [firewall.tf](firewall.tf) template file contains the definitions of the FW rule-groups that these templates come with by default. 
+Attaches AWS Network Firewall directly to [Transit Gateway as a native attachment](https://docs.aws.amazon.com/network-firewall/latest/developerguide/tgw-firewall.html). AWS creates and manages the inspection VPC transparently, removing the need to create and manage your own.
 
-The [default action](https://docs.aws.amazon.com/network-firewall/latest/developerguide/stateless-default-actions.html) taken by the stateless engine is `Forward to stateful rule groups`.
+**Note:** Transit Gateway-Attached Firewall is required to use [Transit Gateway Flexible Cost Allocation](https://docs.aws.amazon.com/vpc/latest/tgw/metering-policy.html) for chargebacks. The other centralized deployment models in this repository do not support this feature.
 
-[Alert logs](https://docs.aws.amazon.com/network-firewall/latest/developerguide/logging-cw-logs.html) are persisted in a dedicated Cloudwatch Log Group (`/aws/network-firewall/alert`).
+| Template | Use Case |
+|----------|----------|
+| [Manual Deployment](transit_gateway_attached_firewall/manual_deployment/) | Learning and hands-on configuration |
+| [Pre-Deployed](transit_gateway_attached_firewall/pre_deployed/) | Automated provisioning |
 
-[Flow logs](https://docs.aws.amazon.com/network-firewall/latest/developerguide/logging-cw-logs.html) are persisted in a dedicated S3 Bucket (`network-firewall-flow-bucket-*`).
+![TGW-Attached Firewall](images/transit-gateway-attached-firewall/tgw-native-attach-full.png)
 
-The rule-groups configured in the policy are the following:
-- `drop-icmp`: this is a stateless rule group that drops all ICMP traffic
-- `drop-non-http-between-vpcs`: this stateful rules drops anything but HTTP traffic between spoke VPCs.
-- `block-domains`: this stateful rule prevents any HTTP traffic to occur to two FQDNs specified in the rule itself.
+#### [Inspection VPC Model](centralized_architecture/)
 
-The template deploys two instances in `spoke-vpc-a` and `spoke-vpc-b` in the `protected` subnets that you can use to test east-west connectivity (and north-south).
+Routes traffic through a dedicated inspection VPC containing the firewall endpoints.
 
-By default, the templates deploy in the `eu-west-1` AWS Region. 
-If you wish to deploy in any other AWS Region, edit the corresponding setting in the [provider.tf](provider.tf) file.
+| Template | Use Case |
+|----------|----------|
+| [Single AZ](centralized_architecture/single_az/) | Single availability zone |
+| [Two AZ](centralized_architecture/two_az/) | High availability across two AZs |
 
-### How-to
-1. Install Terraform (0.14.6 or higher)
-2. Clone this repository
-3. Initialise Terraform `terraform init`
-4. Deploy the template with `terraform apply`. 
+![Centralized Architecture](images/centralized-architecture/nfw-centralized-model-1az.png)
 
-### Tests
-- try a ping between instances in `spoke-vpc-a` and `spoke-vpc-b`: this shouldn't work
-- try to SSH to the EC2 Instance in `spoke-vpc-b` from the EC2 Instance in `spoke-vpc-a` (or vice-versa): this shouldn't work
-- try to curl the private IP of the EC2 Instance in `spoke-vpc-b` from the EC2 Instance in `spoke-vpc-a` (or vice-versa): this should work
-- try a ping to a public IP address: this shouldn't work
-- try to `dig` using a public DNS resolver: this shouldn't work
-- try to curl https://facebook.com or https://twitter.com: this shouldn't work
-- try to curl any other public URL: this should work
-- from any browser naviate to http://<public_alb_dns_name> where <public_alb_dns_name> is the DNS name of the ALB created by your Terraform code in the Inspection VPC.
+### Distributed Architecture
 
-### Cleanup
-Remember to clean up after your work is complete. You can do that by doing `terraform destroy`.
+Deploys AWS Network Firewall into each VPC individually. No Transit Gateway required—each VPC is protected independently.
 
-Note that this command will delete all the resources previously created by Terraform.
+#### [Multiple VPC Endpoint Associations](multi_endpoint/)
 
-## Security
+Leverages the [VPC Endpoint Association feature](https://docs.aws.amazon.com/network-firewall/latest/developerguide/creating-vpc-endpoint-association.html) to deploy multiple firewall endpoints per availability zone to maintain source IP visibility when inspecting both ingress and egress traffic with the same firewall.
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+![Multi-Endpoint Architecture](images/DistributedSeparate1AZArch.png)
+
+#### [Single Endpoint](distributed-architecture/)
+
+Single firewall endpoint per availability zone with options for combined or separate ingress/egress inspection.
+
+| Configuration | Single AZ | Two AZ |
+|--------------|-----------|--------|
+| Combined Ingress/Egress Firewall | [Template](distributed-architecture/single_az/combined-ingress-and-egress-firewall/) | [Template](distributed-architecture/two_az/combined-ingress-and-egress-firewall/) |
+| Separate Ingress/Egress Firewalls | [Template](distributed-architecture/single_az/separate-ingress-and-egress-firewall/) | [Template](distributed-architecture/two_az/separate-ingress-and-egress-firewall/) |
+
+![Distributed Architecture - Combined](images/distributed-architecture/nfw-distributed-model-combined-endpoint-1az.png)
+
+![Distributed Architecture - Separate](images/distributed-architecture/nfw-distributed-model-seperate-endpoint-1az.png)
+
+### [Egress Inspection with AWS Cloud WAN](outbound_inspection_with_cloudwan/)
+
+Workshop-based templates for deploying egress inspection using AWS Cloud WAN and AWS Network Firewall across multiple regions.
+
+![Cloud WAN Architecture](images/egress-inspection-aws-cloud-wan-base-architecture.png)
+
+### [CloudWatch Dashboard](cloudwatch_dashboard/)
+
+Terraform templates for creating a comprehensive monitoring dashboard for AWS Network Firewall metrics and logs.
 
 ## License
 
-This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
+This sample code is made available under the MIT-0 license. See the [LICENSE](LICENSE) file.
 
+## Additional Resources
+
+- [AWS Network Firewall Best Practices Guide](https://aws.github.io/aws-security-services-best-practices/guides/network-firewall/)
+- [Deployment Models for AWS Network Firewall](https://aws.amazon.com/blogs/networking-and-content-delivery/deployment-models-for-aws-network-firewall/)
+- [Deployment Models for AWS Network Firewall - Part 2](https://aws.amazon.com/blogs/networking-and-content-delivery/deployment-models-for-aws-network-firewall-with-vpc-routing-enhancements/)

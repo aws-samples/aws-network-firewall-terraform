@@ -1,9 +1,19 @@
 git-ignored/
-.terraform
-*.tfstate
-*.tfplan
-*.tfvars
-*.backup
+
+# Terraform generated files and directories
+.terraform/         
+*.tfstate  
+*.backup  
+*.tfplan            
 *.hcl
+.terraformrc        
+terraform.rc        
+
+# Configuration files
+*.tfvars            
+*.tfvars.json       
 backend.tf
 plan.out
+
+# Crash log files
+crash.log
